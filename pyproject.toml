@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nk-devkb-agent"
+version = "0.1.0"
+description = "Local MVP knowledge-base agent"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+kb = "nk_devkb_agent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
