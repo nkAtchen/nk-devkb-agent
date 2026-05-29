@@ -3,8 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from .chunking import MarkdownChunker
+from .config import RuntimeConfig
 from .documents import DocumentConverter
-from .llm import DEFAULT_SYSTEM_PROMPT, LocalLLMClient
+from .llm import DEFAULT_SYSTEM_PROMPT, LocalLLMClient, create_llm_client
 from .models import Answer, CollectionSchedule, SearchResult
 from .reflection import ReflectionGate
 from .retrieval import LocalRetriever
@@ -174,5 +175,12 @@ def create_rag_pipeline(
     *,
     db_path: Path | str,
     namespace: str = DEFAULT_NAMESPACE,
+    llm: LocalLLMClient | None = None,
+    config: RuntimeConfig | None = None,
 ) -> RAGTool:
-    return RAGTool(store=KnowledgeStore(db_path), namespace=namespace)
+    runtime_config = config or RuntimeConfig.from_root(Path(db_path).parent.parent)
+    return RAGTool(
+        store=KnowledgeStore(db_path),
+        namespace=namespace,
+        llm=llm or create_llm_client(runtime_config),
+    )
