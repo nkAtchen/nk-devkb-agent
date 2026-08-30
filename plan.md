@@ -60,16 +60,25 @@ PDF 和 DOCX 预留了 Microsoft MarkItDown 转换入口。当前如果没有安
 
 ## 当前 LLM 配置状态
 
-当前版本不需要配置 LLM API key。
+当前版本支持两种 LLM 模式：
 
-代码里使用的是本地 mock：
+- 默认模式：不配置 `.env`，使用本地 mock LLM。
+- 真实 LLM 模式：在 `.env` 中配置 OpenAI-compatible Chat Completions API。
+
+本地 mock 代码：
 
 - 文件：`src/nk_devkb_agent/llm.py`
 - 类：`LocalLLMClient`
 
 它不会调用 OpenAI、DeepSeek、Qwen 或其他云端模型。
 
-后续接真实 LLM 时，建议 `.env` 配置长这样：
+真实 LLM 配置方式：
+
+```bash
+cp .env.example .env
+```
+
+然后编辑 `.env`：
 
 ```env
 LLM_PROVIDER=openai
@@ -78,10 +87,13 @@ LLM_API_KEY=your_api_key
 LLM_BASE_URL=https://api.openai.com/v1
 ```
 
-需要替换的代码位置：
+`kb ask` 会先查询本地 RAG 知识库。如果检索到内容，会把检索上下文和用户输入的 user prompt 一起发给 LLM；如果没有检索到内容，会使用 `default_system_prompt + user_prompt` 生成 `no_rag_context` 答案。
 
-- `LocalLLMClient` -> 真实 `LLMClient`
-- `RAGTool` 中注入真实 LLM client
+相关代码：
+
+- `src/nk_devkb_agent/config.py`
+- `src/nk_devkb_agent/llm.py`
+- `src/nk_devkb_agent/pipeline.py`
 
 ## 当前 Qdrant 配置状态
 
@@ -136,9 +148,8 @@ EMBEDDING_BASE_URL=https://api.openai.com/v1
 
 ## 推荐下一步
 
-1. 加 `.env` 配置加载器。
-2. 接真实 LLM provider。
-3. 接 embedding provider。
-4. 接 Qdrant vector store。
-5. 实现 arXiv/GitHub collector。
-6. 实现真正的定时 worker。
+1. 接 embedding provider。
+2. 接 Qdrant vector store。
+3. 实现 arXiv/GitHub collector。
+4. 实现真正的定时 worker。
+5. 给真实 LLM 调用增加重试、超时配置和错误分类。
